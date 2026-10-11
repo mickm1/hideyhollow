@@ -1,8 +1,4 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Hidey Hollow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -124,8 +120,7 @@ input[type=text]:focus{border-color:var(--pond);outline:none}
 #stickKnob{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:var(--straw);border:3px solid var(--ink)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
-</head>
-<body>
+</head><body>
 
 <canvas id="view" aria-label="Game view"></canvas>
 <div id="paneLabels"></div>
@@ -1065,21 +1060,30 @@ function syncOverlays(now){
 }
 
 /* ---------------- networking (Trystero over Nostr) ---------------- */
+/* Extra STUN servers (no relay): more chances to find a direct path between players. */
+const EXTRA_STUN=[
+  {urls:'stun:stun.nextcloud.com:443'},{urls:'stun:stun.services.mozilla.com:3478'},
+  {urls:'stun:stun3.l.google.com:19302'},{urls:'stun:stun4.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}
+];
 const NET={room:null,mod:null,send:{},hostId:null,sendT:0,relayTimer:null,code:''};
 async function netJoin(code){
   NET.code=code; setNetStatus('Connecting…','');
   if(typeof RTCPeerConnection==='undefined') throw new Error('WebRTC is not available here.');
   const mod=await import(TRYSTERO_URL);
   NET.mod=mod; G.myId=mod.selfId;
-  const room=mod.joinRoom({appId:APP_ID},'room-'+code); NET.room=room;
+  const room=mod.joinRoom({appId:APP_ID,turnConfig:EXTRA_STUN,rtcConfig:{iceCandidatePoolSize:4}},'room-'+code); NET.room=room;
   const mk=(name,fn)=>{const a=room.makeAction(name); NET.send[name]=a[0]; a[1]((d,peer)=>{try{fn(d,peer);}catch(e){console.error(e);}});};
   mk('hello',onHello); mk('lobby',onLobby); mk('start',onStart); mk('pos',onPos); mk('found',onFoundMsg); mk('phase',onPhaseMsg);
   room.onPeerJoin(peer=>NET.send.hello({name:S.name||'Player',host:G.isHost},peer));
   room.onPeerLeave(onLeave);
   let checks=0; clearInterval(NET.relayTimer);
   NET.relayTimer=setInterval(()=>{checks++; let open=0;
+    if(!G.isHost&&!NET.hostId&&NET.send.hello){try{NET.send.hello({name:S.name||'Player',host:false});}catch(e){}}
     try{const socks=mod.getRelaySockets?mod.getRelaySockets():{}; for(const k in socks) if(socks[k]&&socks[k].readyState===1) open++;}catch(e){}
-    if(open>0) setNetStatus(G.isHost?'Ready. Share the code so friends can join.':(NET.hostId?'Connected. Waiting for the host to start.':'Looking for the host…'),'ok');
+    if(open>0){
+      if(!G.isHost&&!NET.hostId&&checks>=10) setNetStatus('Still can\'t reach the host. Check the code, or try switching between Wi-Fi and mobile data. Some mobile networks block direct connections.','bad');
+      else setNetStatus(G.isHost?'Ready. Share the code so friends can join.':(NET.hostId?'Connected. Waiting for the host to start.':'Looking for the host…'),'ok');
+    }
     else if(checks>=4) setNetStatus('Could not connect. Check your internet connection and try again.','bad');
   },1500);
 }
@@ -1441,5 +1445,5 @@ if(document.fonts&&document.fonts.load) document.fonts.load('8px Silkscreen').th
 window.__HH={G,S,genWorld,advance,setPhase,NET,drawHouse,drawInterior,finishTour,scene,view,houseIdx,houseSil,houseCover};
 })();
 </script>
-</body>
-</html>
+
+</body></html>
