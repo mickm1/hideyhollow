@@ -24,11 +24,11 @@ button{font-family:var(--f-display)}
 #menu{background:radial-gradient(ellipse at 50% 40%,rgba(13,21,14,.05),rgba(13,21,14,.72))}
 .panel{position:relative;width:100%;max-width:580px;margin:auto;background:var(--moss);border:4px solid var(--ink);box-shadow:inset 0 0 0 3px var(--moss-hi),0 8px 0 rgba(0,0,0,.45);padding:22px 22px 24px;display:flex;flex-direction:column;gap:16px}
 .panel.small{max-width:380px;text-align:center}
-.logo{margin:0;font-weight:700;font-size:clamp(42px,11vw,72px);line-height:.9;letter-spacing:1px;text-shadow:4px 4px 0 var(--ink);text-wrap:balance}
+.logo{margin:0;font-weight:700;font-size:clamp(42px,11vw,72px);line-height:1.05;letter-spacing:1px;text-shadow:4px 4px 0 var(--ink);text-wrap:balance}
 .logo span{color:var(--tomato);display:inline-block;margin-left:.18em}
 .tag{margin:0;font-size:17px;line-height:1.35;color:var(--straw);max-width:44ch}
 h2{margin:0;font-size:28px;font-weight:700;text-shadow:3px 3px 0 var(--ink);text-wrap:balance}
-.lbl{font-family:var(--f-label);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--straw-dim)}
+.lbl{font-family:var(--f-label);font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--straw-dim)}
 .hint{margin:0;font-size:14px;line-height:1.4;color:var(--straw-dim)}
 .hint b{color:var(--straw);font-weight:500}
 .field{display:flex;flex-direction:column;gap:8px}
@@ -36,7 +36,7 @@ h2{margin:0;font-size:28px;font-weight:700;text-shadow:3px 3px 0 var(--ink);text
 .row.end{justify-content:flex-end}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg button{font-size:15px;padding:8px 12px;background:var(--night);color:var(--straw);border:3px solid var(--ink);box-shadow:inset 0 0 0 2px var(--moss-hi);cursor:pointer}
-.seg button small{font-family:var(--f-label);font-size:9px;display:block;opacity:.8;margin-top:2px}
+.seg button small{font-family:var(--f-label);font-size:10px;display:block;opacity:.8;margin-top:2px}
 .seg button[aria-pressed="true"]{background:var(--straw);color:var(--ink);box-shadow:inset 0 -3px 0 var(--straw-dim)}
 .btn{font-weight:700;font-size:18px;padding:11px 20px;background:var(--tomato);color:var(--ink);border:3px solid var(--ink);box-shadow:inset 0 -4px 0 var(--tomato-dk),inset 0 3px 0 rgba(255,255,255,.35);cursor:pointer}
 .btn:active{transform:translateY(2px)}
@@ -55,17 +55,17 @@ input[type=text]:focus{border-color:var(--pond);outline:none}
 .cast{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
 .cast figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--night);border:2px solid var(--ink);padding:6px 2px 5px}
 .cast img{width:36px;height:44px;image-rendering:pixelated}
-.cast figcaption{font-size:13px;line-height:1}
-.cast figcaption small{display:block;font-family:var(--f-label);font-size:8px;color:var(--leaf);margin-top:3px;text-transform:uppercase}
+.cast figcaption{font-size:14px;line-height:1.2;overflow-wrap:anywhere}
+.cast figcaption small{display:block;font-family:var(--f-label);font-size:10px;color:var(--leaf);margin-top:3px;text-transform:uppercase}
 @media (max-width:540px){.cast{grid-template-columns:repeat(4,minmax(0,1fr))}.panel{padding:18px 16px 20px}}
 
 #hud{position:fixed;left:0;right:0;top:0;z-index:10;display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 0;pointer-events:none}
 #hud > *{pointer-events:auto}
 .hud-l,.hud-r{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .hud-r{justify-content:flex-end}
-.chip{font-family:var(--f-label);font-size:11px;padding:6px 8px;background:rgba(13,21,14,.82);border:2px solid var(--ink);color:var(--straw)}
+.chip{font-family:var(--f-label);font-size:12px;padding:6px 8px;background:rgba(13,21,14,.82);border:2px solid var(--ink);color:var(--straw)}
 .hud-c{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
-.hud-phase{font-family:var(--f-label);font-size:12px;letter-spacing:2px;color:var(--ink);background:var(--straw);padding:3px 8px;border:2px solid var(--ink)}
+.hud-phase{font-family:var(--f-label);font-size:13px;letter-spacing:2px;color:var(--ink);background:var(--straw);padding:3px 8px;border:2px solid var(--ink)}
 .hud-phase.seek{background:var(--tomato)}
 .hud-time{font-size:46px;font-weight:700;line-height:1;text-shadow:3px 3px 0 var(--ink),-1px -1px 0 var(--ink);font-variant-numeric:tabular-nums}
 .hud-time.low{color:var(--tomato)}
@@ -74,10 +74,10 @@ input[type=text]:focus{border-color:var(--pond);outline:none}
 .ibtn{font-size:16px;min-width:38px;height:38px;padding:0 10px;background:rgba(13,21,14,.85);color:var(--straw);border:2px solid var(--ink);cursor:pointer}
 
 #paneLabels,#covers{position:fixed;inset:0;pointer-events:none;z-index:5}
-.plabel{position:absolute;margin:8px;font-family:var(--f-label);font-size:11px;line-height:1.5;background:rgba(13,21,14,.84);padding:4px 7px;border:2px solid var(--ink);max-width:calc(100% - 32px)}
+.plabel{position:absolute;margin:8px;font-family:var(--f-label);font-size:12px;line-height:1.5;background:rgba(13,21,14,.84);padding:4px 7px;border:2px solid var(--ink);max-width:calc(100% - 32px)}
 .plabel b{color:var(--leaf);font-weight:400}
 .cover{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px;box-sizing:border-box;overflow:hidden;background:var(--night) repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 12px,transparent 12px 24px)}
-.cv-who{font-family:var(--f-label);font-size:12px;letter-spacing:1px;color:var(--tomato)}
+.cv-who{font-family:var(--f-label);font-size:13px;letter-spacing:1px;color:var(--tomato)}
 .cv-num{font-size:clamp(64px,16vmin,150px);font-weight:700;line-height:1;text-shadow:5px 5px 0 var(--ink);font-variant-numeric:tabular-nums}
 .cv-txt{font-size:18px;max-width:30ch}
 .cv-list{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:520px}
@@ -88,7 +88,7 @@ input[type=text]:focus{border-color:var(--pond);outline:none}
 .card{flex:1 1 150px;max-width:220px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 10px;background:var(--night);border:3px solid var(--ink);box-shadow:inset 0 0 0 2px var(--moss-hi);text-align:center}
 .card.seeker{box-shadow:inset 0 0 0 2px var(--tomato)}
 .card img{width:72px;height:88px;image-rendering:pixelated}
-.c-who{font-family:var(--f-label);font-size:10px;color:var(--straw-dim)}
+.c-who{font-family:var(--f-label);font-size:11px;color:var(--straw-dim)}
 .c-char{font-size:26px;font-weight:700;line-height:1}
 .c-role{font-size:14px;line-height:1.35}
 .c-role em{font-style:normal;color:var(--leaf)}
@@ -102,8 +102,8 @@ input[type=text]:focus{border-color:var(--pond);outline:none}
 .results td{padding:6px 4px;border-bottom:2px solid rgba(13,21,14,.6);vertical-align:middle}
 .results td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .results img{width:27px;height:33px;image-rendering:pixelated;display:block}
-.results .who small{display:block;font-family:var(--f-label);font-size:9px;color:var(--straw-dim);margin-top:2px}
-.pill{font-family:var(--f-label);font-size:10px;padding:3px 6px;border:2px solid var(--ink);white-space:nowrap}
+.results .who small{display:block;font-family:var(--f-label);font-size:10px;color:var(--straw-dim);margin-top:2px}
+.pill{font-family:var(--f-label);font-size:11px;padding:3px 6px;border:2px solid var(--ink);white-space:nowrap}
 .pill.safe{background:var(--leaf);color:var(--ink)}
 .pill.found{background:var(--tomato);color:var(--ink)}
 .pill.seek{background:var(--straw);color:var(--ink)}
@@ -112,7 +112,7 @@ input[type=text]:focus{border-color:var(--pond);outline:none}
 .code{font-size:56px;font-weight:700;letter-spacing:10px;text-shadow:4px 4px 0 var(--ink);line-height:1}
 .roster{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .roster li{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;background:var(--night);border:2px solid var(--ink);font-size:16px}
-.roster li small{font-family:var(--f-label);font-size:9px;color:var(--straw-dim);align-self:center}
+.roster li small{font-family:var(--f-label);font-size:10px;color:var(--straw-dim);align-self:center}
 .net-ok{color:var(--leaf)} .net-bad{color:var(--tomato)}
 
 #toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;font-size:17px;padding:8px 14px;background:var(--straw);color:var(--ink);border:3px solid var(--ink);box-shadow:0 5px 0 rgba(0,0,0,.4);pointer-events:none;max-width:calc(100vw - 48px);text-align:center}
@@ -740,10 +740,10 @@ function setPropVisible(i,vis){const e=G.world&&G.world.inst&&G.world.inst[i]; i
 /* ---------------- labels & actors ---------------- */
 function labelCanvas(text,bg,fg){
   const c0=document.createElement('canvas').getContext('2d'); c0.font='8px Silkscreen, monospace';
-  const tw=Math.ceil(c0.measureText(text).width), cw=tw+8, ch=12;
+  const tw=Math.ceil(c0.measureText(text).width), cw=tw+10, ch=13;
   const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch; const c=cv.getContext('2d');
   c.fillStyle=INK; c.fillRect(0,1,cw,ch-2); c.fillRect(1,0,cw-2,ch); c.fillStyle=bg; c.fillRect(1,1,cw-2,ch-2);
-  c.font='8px Silkscreen, monospace'; c.textBaseline='middle'; c.fillStyle=fg; c.fillText(text,4,ch/2+1);
+  c.font='8px Silkscreen, monospace'; c.textBaseline='middle'; c.fillStyle=fg; c.fillText(text,5,ch/2+1);
   const id=c.getImageData(0,0,cw,ch), d=id.data; for(let k=3;k<d.length;k+=4) d[k]=d[k]>110?255:0; c.putImageData(id,0,0);
   return cv;
 }
@@ -997,8 +997,11 @@ function wantViews(){
 }
 function resize(){
   const cw=Math.max(1,innerWidth), ch=Math.max(1,innerHeight);
+  /* Each game pixel = a whole number of device pixels, so pixel text stays sharp on phones with fractional or high DPR. */
+  const dpr=Math.max(1,window.devicePixelRatio||1);
   let s=clamp(Math.round(Math.min(cw,ch)/170),2,6); if(view.n>1) s=Math.max(2,s-1);
-  view.scale=s; view.iw=Math.ceil(cw/s); view.ih=Math.ceil(ch/s); renderer.setSize(view.iw,view.ih,false);
+  const sd=Math.max(2,Math.round(s*dpr));
+  view.scale=s; view.iw=Math.ceil(cw*dpr/sd); view.ih=Math.ceil(ch*dpr/sd); renderer.setSize(view.iw,view.ih,false);
 }
 addEventListener('resize',()=>{resize(); view.n=-1;});
 function paneRects(n,W,H){const g=2;
