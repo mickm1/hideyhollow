@@ -1004,14 +1004,16 @@ function resize(){
   let s=clamp(Math.round(Math.min(cw,ch)/170),2,6); if(view.n>1) s=Math.max(2,s-1);
   const sd=Math.max(2,Math.round(s*dpr));
   view.scale=s; view.sd=sd; view.dpr=dpr; view.iw=Math.ceil(cw*dpr/sd)+2; view.ih=Math.ceil(ch*dpr/sd)+2;
+  /* even buffer size keeps the view centre on a pixel edge, so even-sized sprites and labels stay crisp */
+  view.iw+=view.iw&1; view.ih+=view.ih&1;
   /* size the canvas to an exact multiple of device pixels (overhang is clipped) so scrolling never shimmers */
   canvas.style.left=canvas.style.top=(-sd/dpr)+'px'; canvas.style.width=(view.iw*sd/dpr)+'px'; canvas.style.height=(view.ih*sd/dpr)+'px'; renderer.setSize(view.iw,view.ih,false);
 }
 addEventListener('resize',()=>{resize(); view.n=-1;});
 function paneRects(n,W,H){const g=2;
   if(n<=1) return [[0,0,W,H]];
-  if(n===2){ if(W>=H){const w=(W-g)>>1; return [[0,0,w,H],[w+g,0,W-w-g,H]];} const h=(H-g)>>1; return [[0,H-h,W,h],[0,0,W,H-h-g]]; }
-  const w=(W-g)>>1, h=(H-g)>>1; return [[0,H-h,w,h],[w+g,H-h,W-w-g,h],[0,0,w,H-h-g],[w+g,0,W-w-g,H-h-g]].slice(0,n);}
+  if(n===2){ if(W>=H){const w=((W-g)>>1)&~1; return [[0,0,w,H],[w+g,0,W-w-g,H]];} const h=((H-g)>>1)&~1; return [[0,H-h,W,h],[0,0,W,H-h-g]]; }
+  const w=((W-g)>>1)&~1, h=((H-g)>>1)&~1; return [[0,H-h,w,h],[w+g,H-h,W-w-g,h],[0,0,w,H-h-g],[w+g,0,W-w-g,H-h-g]].slice(0,n);}
 function houseIdx(p){const w=G.world; if(!w||!w.houseOf||!p) return -1; const x=Math.floor(p.x), z=Math.floor(p.z); if(x<0||z<0||x>=w.W||z>=w.H) return -1; return w.houseOf[z*w.W+x];}
 function applyCamLayers(pn,v){
   const cam=pn.cam; cam.layers.set(0); if(!(v.p&&v.p.isSeeker&&G.phase==='hide')) cam.layers.enable(1);
