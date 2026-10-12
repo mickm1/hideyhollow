@@ -525,6 +525,7 @@ const GEO={}; for(const k of PT){GEO[k]=[]; for(let v=0;v<VARS[k];v++) GEO[k][v]
 const RAIL_GEO=voxGeom([[0,0,0,.09,.3,.09,'#6e4826'],[0,.22,0,1,.06,.06,'#8a5c30']]);
 const PROP_MAT=shared(new THREE.MeshLambertMaterial({vertexColors:true}));
 
+
 function pxEllipse(c,cx,cy,rx,ry){for(let y=-ry;y<=ry;y++){const w=Math.round(rx*Math.sqrt(Math.max(0,1-(y*y)/((ry+0.5)*(ry+0.5))))); c.fillRect(cx-w,cy+y,w*2+1,1);}}
 function ellipseTex(rx,ry){const cv=document.createElement('canvas'); cv.width=rx*2+1; cv.height=ry*2+1; const c=cv.getContext('2d'); c.fillStyle='#fff'; pxEllipse(c,rx,ry,rx,ry); return shared(texFrom(cv));}
 const SHTEX={}; for(const k of PT) SHTEX[k]=ellipseTex(SHD[k][0],SHD[k][1]);
@@ -741,7 +742,7 @@ function setPropVisible(i,vis){const e=G.world&&G.world.inst&&G.world.inst[i]; i
 /* ---------------- labels & actors ---------------- */
 function labelCanvas(text,bg,fg){
   const c0=document.createElement('canvas').getContext('2d'); c0.font='8px Silkscreen, monospace';
-  const tw=Math.ceil(c0.measureText(text).width), cw=tw+10, ch=13;
+  const tw=Math.ceil(c0.measureText(text).width), cw=tw+10+(tw&1), ch=14;
   const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch; const c=cv.getContext('2d');
   c.fillStyle=INK; c.fillRect(0,1,cw,ch-2); c.fillRect(1,0,cw-2,ch); c.fillStyle=bg; c.fillRect(1,1,cw-2,ch-2);
   c.font='8px Silkscreen, monospace'; c.textBaseline='middle'; c.fillStyle=fg; c.fillText(text,5,ch/2+1);
@@ -973,7 +974,7 @@ addEventListener('pointerdown',()=>ac(),{passive:true});
   el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);})();
 (function(){let dr=null;
   canvas.addEventListener('pointerdown',e=>{ if(G.phase!=='hide') return; const p=G.locals.find(q=>q.isSeeker); if(!p) return; dr={id:e.pointerId,x:e.clientX,y:e.clientY,p}; try{canvas.setPointerCapture(e.pointerId);}catch(_){} });
-  canvas.addEventListener('pointermove',e=>{ if(!dr||e.pointerId!==dr.id||G.phase!=='hide') return; const k=(innerWidth/view.iw)*16, p=dr.p;
+  canvas.addEventListener('pointermove',e=>{ if(!dr||e.pointerId!==dr.id||G.phase!=='hide') return; const k=(view.sd/view.dpr)*16, p=dr.p;
     p.panX=clamp(p.panX-(e.clientX-dr.x)/k,0,G.world.W); p.panZ=clamp(p.panZ-(e.clientY-dr.y)/k,0,G.world.H); dr.x=e.clientX; dr.y=e.clientY; });
   const end=e=>{ if(dr&&e.pointerId===dr.id) dr=null; }; canvas.addEventListener('pointerup',end); canvas.addEventListener('pointercancel',end);
 })();
@@ -1002,7 +1003,9 @@ function resize(){
   const dpr=Math.max(1,window.devicePixelRatio||1);
   let s=clamp(Math.round(Math.min(cw,ch)/170),2,6); if(view.n>1) s=Math.max(2,s-1);
   const sd=Math.max(2,Math.round(s*dpr));
-  view.scale=s; view.iw=Math.ceil(cw*dpr/sd); view.ih=Math.ceil(ch*dpr/sd); renderer.setSize(view.iw,view.ih,false);
+  view.scale=s; view.sd=sd; view.dpr=dpr; view.iw=Math.ceil(cw*dpr/sd)+2; view.ih=Math.ceil(ch*dpr/sd)+2;
+  /* size the canvas to an exact multiple of device pixels (overhang is clipped) so scrolling never shimmers */
+  canvas.style.left=canvas.style.top=(-sd/dpr)+'px'; canvas.style.width=(view.iw*sd/dpr)+'px'; canvas.style.height=(view.ih*sd/dpr)+'px'; renderer.setSize(view.iw,view.ih,false);
 }
 addEventListener('resize',()=>{resize(); view.n=-1;});
 function paneRects(n,W,H){const g=2;
@@ -1024,11 +1027,16 @@ function layoutPanes(views){
   views.forEach((v,i)=>{const pn=view.panes[i]; pn.rect=rects[i]; pn.v=v;
     applyCamLayers(pn,v); const key=v.attract?'attract':v.tour?'tour':(v.p?v.p.id:'none'); if(pn.key!==key){pn.key=key; pn.cx=null;}});
 }
+/* Critically damped follow: no overshoot, continuous velocity, so snapped camera steps stay even. */
+function smoothDamp(pn,ax,cur,target,dt){
+  const om=2/0.14, x=om*dt, e=1/(1+x+0.48*x*x+0.235*x*x*x), key='v'+ax, ch=cur-target, tmp=((pn[key]||0)+om*ch)*dt;
+  pn[key]=((pn[key]||0)-om*tmp)*e; return target+(ch+tmp)*e;
+}
 function placeCam(pn,tx,tz,dt,snap){
   const [,,w,h]=pn.rect, W=G.world.W, H=G.world.H, hx=w/32, hz=h/32;
   tx=W>2*hx?clamp(tx,hx,W-hx):W/2; tz=H>2*hz?clamp(tz,hz-0.5,H-hz+1):H/2;
-  if(pn.cx==null||snap){pn.cx=tx; pn.cz=tz;} else {const k=1-Math.exp(-dt*7); pn.cx=lerp(pn.cx,tx,k); pn.cz=lerp(pn.cz,tz,k);}
-  const sx=Math.round(pn.cx*16)/16, sz=Math.round(pn.cz*16)/16, cam=pn.cam;
+  if(pn.cx==null||snap){pn.cx=tx; pn.cz=tz; pn.vx=0; pn.vz=0;} else {pn.cx=smoothDamp(pn,'x',pn.cx,tx,dt); pn.cz=smoothDamp(pn,'z',pn.cz,tz,dt);}
+  const sx=Math.round(pn.cx*16)/16, sz=Math.round(pn.cz*16)/16, cam=pn.cam; pn.fx=pn.cx-sx; pn.fz=pn.cz-sz;
   cam.left=-w/32; cam.right=w/32; cam.top=h*SIN_EL/32; cam.bottom=-h*SIN_EL/32; cam.updateProjectionMatrix();
   cam.position.set(sx,50*Math.sin(EL),sz+50*Math.cos(EL)); cam.lookAt(sx,0,sz);
 }
@@ -1041,10 +1049,15 @@ function renderPanes(dt,now){
     else if(pn.v.p){ const q=pn.v.p, snap=pn.ph!==G.phase; pn.ph=G.phase;
       if(G.phase==='hide'&&q.isSeeker&&q.local) placeCam(pn,q.panX,q.panZ-0.4,dt,snap); else placeCam(pn,q.x,q.z-0.4,dt,snap); }
     renderer.setViewport(x,y,w,h); renderer.setScissor(x,y,w,h); renderer.render(scene,pn.cam);}
+  /* Sub-pixel scrolling: the world is drawn on whole game pixels, then the canvas is nudged by the leftover
+     distance in whole screen pixels, so motion is smooth without resampling blur or shimmer. */
+  let tx=0, ty=0; const p0=view.panes[0];
+  if(view.panes.length===1&&p0&&p0.fx!=null){ tx=Math.round(-p0.fx*16*view.sd)/view.dpr; ty=Math.round(-p0.fz*16*view.sd)/view.dpr; }
+  const tf=tx||ty?`translate3d(${tx}px,${ty}px,0)`:''; if(view.tf!==tf){view.tf=tf; canvas.style.transform=tf;}
 }
 
 /* ---------------- DOM overlays per pane ---------------- */
-function paneCss(r){const [x,y,w,h]=r; return {left:(x/view.iw*100)+'%',top:((view.ih-y-h)/view.ih*100)+'%',width:(w/view.iw*100)+'%',height:(h/view.ih*100)+'%'};}
+function paneCss(r){const [x,y,w,h]=r, u=view.sd/view.dpr; return {left:((x-1)*u)+'px',top:((view.ih-y-h-1)*u)+'px',width:(w*u)+'px',height:(h*u)+'px'};}
 const overlayEls={labels:[],covers:[]};
 function syncOverlays(now){
   const box=$('paneLabels'), cbox=$('covers'), panes=view.panes, multi=panes.length>1&&G.mode==='local'&&G.phase!=='menu';
@@ -1318,7 +1331,9 @@ function syncActors(dt,now){
     p.label.visible=on;
     if(on){ setLabel(p,text,bg,fg);
       const top=p.disguised?(CHARS[p.charIdx].prop==='tree'?1.75:CHARS[p.charIdx].prop==='rock'?0.9:0.6):SPR_H*TAN_EL/16;
-      p.label.position.set(p.disguised?p.disg.position.x:p.x,top+0.1+bob,(p.disguised?p.disg.position.z:p.z)+0.05);}
+      const lx=p.disguised?p.disg.position.x:p.x, lz=(p.disguised?p.disg.position.z:p.z)+0.05;
+      /* snap to the pixel grid so label glyphs are not resampled unevenly */
+      p.label.position.set(Math.round(lx*16)/16,Math.round((top+0.1+bob)*16/TAN_EL)*TAN_EL/16,Math.round(lz*16)/16);}
   }
 }
 
@@ -1344,10 +1359,11 @@ function update(dt,now){
   const sk=seeker(); if(ph==='seek'&&sk&&sk.owned) checkTags(sk);
   if(G.mode==='online') netTick(dt);
 }
+let sdt=1/60;
 function frame(now){
   const dt=Math.min(0.05,(now-last)/1000); last=now;
   try{ update(dt,now); syncActors(dt,now); fxUpdate(dt);
-    layoutPanes(wantViews()); renderPanes(dt,now); syncOverlays(now); hudT+=dt; if(hudT>0.1){hudT=0; hud(now);} }
+    layoutPanes(wantViews()); sdt+=(Math.min(0.05,dt)-sdt)*0.25; renderPanes(sdt,now); syncOverlays(now); hudT+=dt; if(hudT>0.1){hudT=0; hud(now);} }
   catch(e){ console.error(e); }
   requestAnimationFrame(frame);
 }
